@@ -1,19 +1,19 @@
-import json
 import sys
+import json
+import re
 from base64 import b64encode, b64decode
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Hash import HMAC, SHA256
-
+from Crypto.Protocol.KDF import scrypt
 
 file = "tajnik.encrypted"
+salt = "morejeslano"
 
 
-def generate_keys(master_key):  # IMPROVE FUNCTION
-    master_key = str.encode(master_key)
-    aes_key = SHA256.new(data=master_key)
-    hmac_key = SHA256.new(data=master_key)
-    return aes_key.digest(), hmac_key.digest()
+def generate_keys(master_key):
+    aes_key, hmac_key = scrypt(master_key, salt, key_len=16, N=2 ** 16, r=8, p=1, num_keys=2)
+    return aes_key, hmac_key
 
 
 def generate_aes(key, data):
@@ -55,6 +55,11 @@ def validate_hmac(key, hmac, data):
 
 
 def init(master_pass):
+    if len(master_pass) < 8:
+        print("ERROR: Master password too short! Minimum length is 8.")
+        exit(1)
+    if re.match('^[^!@#$%^&*]*$', master_pass):
+        print("WARNING: Master password doesn't contain special characters!")
     aes_key, hmac_key = generate_keys(master_pass)
     data = {}
     init_vector, cipher = generate_aes(aes_key, data)
