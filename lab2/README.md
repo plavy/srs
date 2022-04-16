@@ -34,6 +34,15 @@ Moguće je i obrisati korisnka sa sustava koristeći `del`. Korisnik se više ne
 python usermgmt.py del <user>
 ```
 
+## Sigurnosne specifikacije
+
+### Tajnost lozinki
+Program koristi datetoku za pohranu lozinki.
+U datoteci je JSON rječnik koji za ključeve ima imena korisnika, a kao vrijednost ima dodatne informacije.
+Dodatne informacije su rječnik koji sadrži hash vrijednost lozinke, salt korišten za hashiranje te zastavicu za forsiranje promjene lozinke.
+Salt duljine 32 bajta se iznova nasumično generira prilikom svakog hashiranja, odnosno svake pohrane nove lozinke.
+Sam salt nije kriptiran, no on garantira da će sve hash vrijednosti biti različite, čak i za iste lozinke, što osigurava njihovu tajnost.
+
 # Login - korisnički prijavitelj
 
 ## Zahtjevi
@@ -54,4 +63,11 @@ python login.py <user>
 
 Ukoliko ime korisnika ili lozinka nisu točni, program daje još 2 šanse prije nego što prekine s radom.
 
-Ukoliko administrator forsira promjenu lozinke za korisnika, korisnik će morati unijeti novu loziku prije uspješne prijave. 
+Ukoliko administrator forsira promjenu lozinke za korisnika, korisnik će morati unijeti novu loziku prije uspješne prijave.
+
+## Sigurnosne specifikacije
+
+### Siguran unos lozinke
+Loznika se ne unosi zajedno s naredbom poziva programu, već ju program naknadno traži.
+Prilikom unosa lozinke ništa se ne šalje natrag na terminal.
+Na ovaj način unesena lozinka ne ostaje u logovima sustava.
