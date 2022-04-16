@@ -62,6 +62,10 @@ def passwd(user, create=False):
     logins[user]['salt'] = salt
     with open(file, "w") as f:
         json.dump(logins, f)
+    if create:
+        print("User successfully added.")
+    else:
+        print("Password change successful.")
 
 
 def force_pass(user, force=True):
@@ -83,7 +87,7 @@ def add(user):
         passwd(user, True)
         force_pass(user, False)
     else:
-        print("User already exists.")
+        print("User already exists. Use passwd instead.")
         exit(1)
 
 

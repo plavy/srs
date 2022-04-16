@@ -8,7 +8,11 @@ def login(user):
     with open(file, "r") as f:
         logins = json.load(f)
     force = ""
+    i = 0
     while True:
+        i += 1
+        if i > 3:
+            exit(1)
         password = request_password()
         if user not in logins:
             print("Username or password incorrect.")
