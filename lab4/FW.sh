@@ -29,7 +29,10 @@ $IPT -A INPUT   -i eth0 -s 127.0.0.0/8  -j DROP
 $IPT -A FORWARD -i eth0 -s 127.0.0.0/8  -j DROP
 #
 # <--- Dodajte ili modificirajte pravila
-
+$IPT -A INPUT   -i eth0 -s 192.168.0.0/16  -j DROP
+$IPT -A FORWARD -i eth0 -s 192.168.0.0/16  -j DROP
+$IPT -A INPUT   -i eth0 -s 192.0.2.1       -j DROP
+$IPT -A FORWARD -i eth0 -s 192.0.2.1       -j DROP
 #
 # racunala iz lokalne mreze (LAN) imaju neograniceni pristup posluziteljima u DMZ i Internetu
 #
