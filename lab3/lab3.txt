@@ -137,3 +137,21 @@ Za ime će se postaviti `haker`, a nakon toga će se pokrenuti skripta koja će 
 
 ## 4. File Inclusion
 
+File inclusion sam izveo promjenom parametra `page` u URL-u.
+```
+<ip>/vulnerabilities/fi/?page=/etc/passwd
+```
+Slika je priložena.
+![File Inclusion](file_inclusion.png)
+
+To je moguće jer izvorni kod ne verificira parametar `page`:
+```php
+<?php
+
+// The page we wish to display
+$file = $_GET[ 'page' ];
+
+?>
+```
+Aplikacija bi se mogla zaštititi provjerom parametra `page`. Pr. ako počinje s `/`, `../`, `http://` ili `https://`, odbijemo prikazati datoteku.
+Za najvišu razinu sigurnosti, mogli bismo napraviti listu dopuštenih datoteka i samo njih propuštati kao vrijednost parametra.
