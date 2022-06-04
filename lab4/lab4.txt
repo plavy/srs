@@ -1,0 +1,26 @@
+> Preporučujem otvoriti datoteku kao Markdown datoteku.
+
+## 0. Spajanje
+
+Povukao sam najnoviji git repozitorij te kao superuser pokrenuo IMUNES eksperiment.
+
+## 1. Provjera početnog stanja
+
+Na Wiresharku se prije pokretanja komandi vide paketi protokola RIP, IGMP, ICMP i ARP.
+
+Nakon pokretanja `telnet` komande, Wireshark je zabilježio nekoliko TCP paketa i dvadesetak TELNET paketa.
+Prvo se odvija uspostava TCP konekcije pomoću SYN i ACK, te se nakon toga šalje `Telnet Data`. Korištenjem opcije `Follow TCP Stream` možemo vidjeti da je poslana poruka:
+```
+Debian GNU/Linux 9
+server login: ...
+```
+
+Nakon pokretanja `ssh` komande, Wireshark je opet zabilježio nekoliko TCP paketa te dvadesetak SSHv2 paketa. Prvo se odvija uspostava TCP konekcije, a nakon toga SSH šalje podatke. Korištenjem opcije `Follow TCP Stream` možemo vidjeti da klijent i server prvo razmijene podatke o verziji protokola:
+```
+SSH-2.0-OpenSSH_7.4p1 Debian-10+deb9u6 # crveno
+SSH-2.0-OpenSSH_7.4p1 Debian-10+deb9u6 # plavo
+```
+Nakon toga razmjenjuju ekstenzivan popis različitih kriptografskih algoritama koje podržavaju.
+Potom razmjenjuju same SSH ključeve.
+
+## 2. Konfiguracija vatrozida 
